@@ -20,7 +20,7 @@ This project explores the physical hardware impact of Neural Network Quantizatio
 
 ![Comparison](quantization_comparison.png)
 
-* **Hardware Cache Saturation:** The profiling trace recorded a massive **26,844,121 L2 Cache Misses** across the execution. The Cortex-A72 features a 1MB L2 cache, which was entirely overwhelmed by the 12MB FP32 memory footprint, forcing constant system RAM evictions.
+* **Hardware Cache Saturation:** The profiling trace recorded **26,844,121** L2 Cache Misses across the full process execution, spanning both the FP32 and INT8 inference passes sequentially within a single perf stat session. This combined figure reflects the aggregate memory pressure of both precision modes. The Cortex-A72 features a 1MB L2 cache. The FP32 working set — three 1024×1024 float matrices at 4 bytes per element — occupies 12MB (3 × 1024 × 1024 × 4 bytes), entirely exceeding the L2 capacity and forcing constant DRAM evictions. The INT8 equivalent reduces this to 3MB (3 × 1024 × 1024 × 1 byte), a 75% reduction in memory pressure.
 * **The IPC Bottleneck:** The system recorded an Instructions Per Cycle (IPC) of **0.83**. Because a fully saturated Cortex-A72 pipeline is capable of executing >2 operations per cycle, an IPC of <1.0 mathematically proves the processor execution units are starving. The AI workload is severely **Memory-Bound**, restricted by memory latency and bus bandwidth rather than ALU compute availability.
 * **Conclusion:** Moving from FP32 to INT8 yielded a 2.02x performance uplift purely by alleviating pressure on the memory bus. To push IPC higher and achieve further acceleration, the software must be optimized with Loop Tiling (L2 cache localization) and ARM NEON SIMD intrinsics.
 
